@@ -1,0 +1,153 @@
+.thermodynamics-simulator {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: #ffffff;
+  padding: 2rem;
+}
+
+.simulator-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.simulator-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #00D4FF 0%, #4D61FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.simulator-content {
+  display: flex;
+  flex: 1;
+  gap: 2rem;
+}
+
+.controls-panel {
+  width: 300px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simulation-type {
+  margin-bottom: 2rem;
+}
+
+.type-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.type-button {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.type-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.type-button.selected {
+  background: linear-gradient(135deg, #4D61FC 0%, #00D4FF 100%);
+}
+
+.parameters {
+  margin-bottom: 2rem;
+}
+
+.parameter {
+  margin-bottom: 1rem;
+}
+
+.parameter label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #a0a0a0;
+}
+
+.parameter input {
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.25rem;
+  color: #ffffff;
+}
+
+.simulation-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.start-button, .reset-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-button {
+  background: linear-gradient(135deg, #4D61FC 0%, #00D4FF 100%);
+  color: white;
+}
+
+.start-button.running {
+  background: linear-gradient(135deg, #FF4D61 0%, #FF00D4 100%);
+}
+
+.reset-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.reset-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.simulation-info {
+  text-align: center;
+  color: #a0a0a0;
+}
+
+.canvas-container {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.simulation-canvas {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .simulator-content {
+    flex-direction: column;
+  }
+
+  .controls-panel {
+    width: 100%;
+  }
+
+  .canvas-container {
+    height: 400px;
+  }
+} 

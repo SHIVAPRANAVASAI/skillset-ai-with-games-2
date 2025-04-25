@@ -1,0 +1,204 @@
+.network-security-simulator {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.simulator-header {
+  padding: 20px;
+  text-align: center;
+  background-color: #2a2a2a;
+}
+
+.simulator-header h1 {
+  margin: 0;
+  font-size: 2em;
+  color: #4D61FC;
+}
+
+.simulator-header p {
+  margin: 10px 0 0;
+  color: #a0a0a0;
+}
+
+.simulator-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  gap: 20px;
+}
+
+.controls-panel {
+  width: 300px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.tool-selection h3,
+.parameters h3,
+.connections-list h3 {
+  margin: 0 0 15px;
+  color: #4D61FC;
+}
+
+.tool-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tool-button {
+  background-color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tool-button:hover {
+  background-color: #444;
+}
+
+.tool-button.selected {
+  background-color: #4D61FC;
+}
+
+.tool-name {
+  font-weight: bold;
+}
+
+.parameter-group {
+  margin-bottom: 15px;
+}
+
+.parameter-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #a0a0a0;
+}
+
+.parameter-group input[type="range"],
+.parameter-group select {
+  width: 100%;
+  margin-bottom: 5px;
+  background-color: #333;
+  border: none;
+  border-radius: 4px;
+  padding: 5px;
+  color: #fff;
+}
+
+.parameter-value {
+  display: block;
+  text-align: right;
+  color: #4D61FC;
+  font-weight: bold;
+}
+
+.connections-list {
+  margin-top: 20px;
+}
+
+.connection-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.encryption-button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #444;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.encryption-button.active {
+  background-color: #4D61FC;
+}
+
+.simulation-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.start-button,
+.reset-button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.start-button {
+  background-color: #4D61FC;
+  color: white;
+}
+
+.start-button.running {
+  background-color: #FF6B9C;
+}
+
+.reset-button {
+  background-color: #333;
+  color: white;
+}
+
+.reset-button:hover {
+  background-color: #444;
+}
+
+.canvas-container {
+  flex: 1;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  position: relative;
+  min-height: 400px;
+  height: 100%;
+}
+
+.simulation-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  background-color: #1a1a1a;
+}
+
+@media (max-width: 768px) {
+  .simulator-content {
+    flex-direction: column;
+  }
+
+  .controls-panel {
+    width: 100%;
+    max-height: 300px;
+  }
+} 

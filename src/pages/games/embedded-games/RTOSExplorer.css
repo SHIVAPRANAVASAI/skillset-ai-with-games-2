@@ -1,0 +1,206 @@
+.rtos-explorer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.explorer-header {
+  padding: 20px;
+  text-align: center;
+  background-color: #2a2a2a;
+}
+
+.explorer-header h1 {
+  margin: 0;
+  font-size: 2em;
+  color: #00979D;
+}
+
+.explorer-header p {
+  margin: 10px 0 0;
+  color: #a0a0a0;
+}
+
+.explorer-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  gap: 20px;
+}
+
+.controls-panel {
+  width: 300px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.scheduler-selection h3,
+.task-controls h3,
+.simulation-controls h3,
+.output-panel h3 {
+  margin: 0 0 15px;
+  color: #00979D;
+}
+
+.scheduler-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scheduler-button {
+  background-color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.scheduler-button:hover {
+  background-color: #444;
+}
+
+.scheduler-button.selected {
+  background-color: #00979D;
+}
+
+.scheduler-name {
+  font-weight: bold;
+  display: block;
+}
+
+.scheduler-description {
+  font-size: 0.9em;
+  color: #a0a0a0;
+  display: block;
+  margin-top: 5px;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.add-button,
+.run-button,
+.stop-button,
+.clear-button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.add-button {
+  background-color: #4ECDC4;
+  color: white;
+}
+
+.run-button {
+  background-color: #00979D;
+  color: white;
+}
+
+.run-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.stop-button {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+.stop-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.clear-button {
+  background-color: #333;
+  color: white;
+}
+
+.clear-button:hover {
+  background-color: #444;
+}
+
+.time-slice-control {
+  margin-bottom: 15px;
+}
+
+.time-slice-control label {
+  display: block;
+  margin-bottom: 5px;
+  color: #a0a0a0;
+}
+
+.time-slice-control input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #333;
+  color: white;
+}
+
+.output-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.output {
+  flex: 1;
+  background-color: #333;
+  border-radius: 6px;
+  padding: 10px;
+  color: #fff;
+  font-family: monospace;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.simulation-area {
+  flex: 1;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  position: relative;
+  min-height: 400px;
+}
+
+.simulation-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  background-color: #1a1a1a;
+}
+
+@media (max-width: 768px) {
+  .explorer-content {
+    flex-direction: column;
+  }
+
+  .controls-panel {
+    width: 100%;
+    max-height: 300px;
+  }
+} 

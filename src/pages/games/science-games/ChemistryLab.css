@@ -1,0 +1,204 @@
+.chemistry-lab {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.lab-header {
+  padding: 20px;
+  text-align: center;
+  background-color: #2a2a2a;
+}
+
+.lab-header h1 {
+  margin: 0;
+  font-size: 2em;
+  color: #FF6B6B;
+}
+
+.lab-header p {
+  margin: 10px 0 0;
+  color: #a0a0a0;
+}
+
+.lab-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  gap: 20px;
+}
+
+.experiments-panel {
+  width: 300px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.experiments-panel h3 {
+  margin: 0;
+  color: #FF6B6B;
+}
+
+.experiment-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.experiment-button {
+  background-color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  border: 2px solid transparent;
+}
+
+.experiment-button:hover {
+  background-color: #444;
+  border-color: var(--experiment-color);
+}
+
+.experiment-button.selected {
+  background-color: #444;
+  border-color: var(--experiment-color);
+}
+
+.experiment-name {
+  font-weight: bold;
+  display: block;
+  color: var(--experiment-color);
+}
+
+.experiment-description {
+  font-size: 0.9em;
+  color: #a0a0a0;
+  display: block;
+  margin-top: 5px;
+}
+
+.parameters-panel {
+  background-color: #333;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.parameter-control {
+  margin: 10px 0;
+}
+
+.parameter-control label {
+  display: block;
+  margin-bottom: 5px;
+  color: #a0a0a0;
+}
+
+.parameter-control input[type="range"] {
+  width: 100%;
+  margin: 5px 0;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.parameter-control input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: #666;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.parameter-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--experiment-color, #FF6B6B);
+  margin-top: -6px;
+  cursor: pointer;
+}
+
+.parameter-control span {
+  display: block;
+  text-align: right;
+  color: #a0a0a0;
+  font-size: 0.9em;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.control-button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.control-button.start {
+  background-color: #22C55E;
+  color: white;
+}
+
+.control-button.stop {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+.control-button.reset {
+  background-color: #666;
+  color: white;
+}
+
+.control-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.experiment-area {
+  flex: 1;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  position: relative;
+  min-height: 400px;
+  overflow: hidden;
+}
+
+.experiment-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .lab-content {
+    flex-direction: column;
+  }
+
+  .experiments-panel {
+    width: 100%;
+    max-height: 300px;
+  }
+} 

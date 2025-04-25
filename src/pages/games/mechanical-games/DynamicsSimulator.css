@@ -1,0 +1,185 @@
+.dynamics-simulator {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.simulator-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.simulator-header h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.simulator-header p {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+}
+
+.simulator-content {
+  display: flex;
+  gap: 2rem;
+  min-height: 600px;
+}
+
+.controls-panel {
+  width: 300px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.simulation-type {
+  margin-bottom: 2rem;
+}
+
+.simulation-type h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.type-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.type-button {
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.type-button:hover {
+  background: #f0f0f0;
+  border-color: #3498db;
+}
+
+.type-button.selected {
+  background: #3498db;
+  color: white;
+  border-color: #2980b9;
+}
+
+.parameters {
+  margin-bottom: 2rem;
+}
+
+.parameters h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.parameter {
+  margin-bottom: 1rem;
+}
+
+.parameter label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.parameter input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.parameter input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.simulation-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.start-button,
+.reset-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.start-button {
+  background: #3498db;
+  color: white;
+}
+
+.start-button:hover {
+  background: #2980b9;
+}
+
+.start-button.running {
+  background: #2ecc71;
+}
+
+.reset-button {
+  background: #e74c3c;
+  color: white;
+}
+
+.reset-button:hover {
+  background: #c0392b;
+}
+
+.simulation-info {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.canvas-container {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.simulation-canvas {
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .simulator-content {
+    flex-direction: column;
+  }
+
+  .controls-panel {
+    width: 100%;
+  }
+
+  .type-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .type-button {
+    flex: 1;
+    min-width: 120px;
+  }
+} 

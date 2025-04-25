@@ -1,0 +1,387 @@
+.vocabulary-builder {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.builder-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.builder-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #FF6B6B, #4D61FC);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.builder-header p {
+  color: #a0a0a0;
+  font-size: 1.1rem;
+}
+
+.builder-content {
+  display: grid;
+  gap: 2rem;
+}
+
+.language-selector,
+.difficulty-selector,
+.topic-selector {
+  background: #1a1a1a;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.language-selector h3,
+.difficulty-selector h3,
+.topic-selector h3 {
+  margin-bottom: 1rem;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.language-buttons,
+.difficulty-buttons,
+.topic-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.language-button,
+.difficulty-button,
+.topic-button {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.language-button:hover,
+.difficulty-button:hover,
+.topic-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.language-button.selected {
+  background: var(--language-color);
+}
+
+.difficulty-button.selected {
+  background: var(--difficulty-color);
+}
+
+.topic-button.selected {
+  background: var(--topic-color);
+}
+
+.game-area {
+  background: #1a1a1a;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+}
+
+.score {
+  color: #4ade80;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.streak {
+  color: #ff9f43;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.timer {
+  color: #4d61fc;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.word-display {
+  text-align: center;
+  padding: 2rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+}
+
+.word-display h2 {
+  font-size: 2.5rem;
+  color: #fff;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.word-display p {
+  color: #a0a0a0;
+  font-size: 1.1rem;
+}
+
+.answer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.answer-section textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #3a3a3a;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 1.1rem;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.answer-section textarea:focus {
+  outline: none;
+  border-color: #4d61fc;
+}
+
+.hint {
+  padding: 1rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+  color: #ff9f43;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.feedback {
+  padding: 1rem;
+  border-radius: 8px;
+  background: #2a2a2a;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.control-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.hint-button,
+.check-button,
+.next-button,
+.reset-button {
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hint-button:hover,
+.check-button:hover,
+.next-button:hover,
+.reset-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hint-button {
+  background: #ff9f43;
+}
+
+.check-button {
+  background: #4ade80;
+}
+
+.next-button {
+  background: #4d61fc;
+}
+
+.reset-button {
+  background: #ff6b6b;
+}
+
+.history-panel {
+  background: #1a1a1a;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.history-panel h3 {
+  margin-bottom: 1rem;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+}
+
+.history-item.correct {
+  border-left: 4px solid #4ade80;
+}
+
+.history-item.incorrect {
+  border-left: 4px solid #ff6b6b;
+}
+
+.history-item .word {
+  font-weight: 500;
+  color: #fff;
+}
+
+.history-item .status {
+  font-size: 0.9rem;
+  color: #a0a0a0;
+}
+
+@media (max-width: 768px) {
+  .vocabulary-builder {
+    padding: 1rem;
+  }
+
+  .builder-header h1 {
+    font-size: 2rem;
+  }
+
+  .language-buttons,
+  .difficulty-buttons,
+  .topic-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .control-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+.completion-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.completion-modal {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #333;
+}
+
+.completion-modal h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.completion-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  background-color: #2a2a2a;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  display: block;
+  color: #4ade80;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.completion-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-button {
+  background-color: #4ade80;
+  color: #1a1a1a;
+}
+
+.primary-button:hover {
+  background-color: #22c55e;
+}
+
+.secondary-button {
+  background-color: #4b5563;
+  color: #fff;
+}
+
+.secondary-button:hover {
+  background-color: #374151;
+} 

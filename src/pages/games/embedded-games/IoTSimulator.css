@@ -1,0 +1,169 @@
+.iot-simulator {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.simulator-header {
+  padding: 20px;
+  text-align: center;
+  background-color: #2a2a2a;
+}
+
+.simulator-header h1 {
+  margin: 0;
+  font-size: 2em;
+  color: #00979D;
+}
+
+.simulator-header p {
+  margin: 10px 0 0;
+  color: #a0a0a0;
+}
+
+.simulator-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  gap: 20px;
+}
+
+.controls-panel {
+  width: 300px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.device-selection h3,
+.simulation-controls h3,
+.output-panel h3 {
+  margin: 0 0 15px;
+  color: #00979D;
+}
+
+.device-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.device-button {
+  background-color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.device-button:hover {
+  background-color: #444;
+}
+
+.device-button.selected {
+  background-color: #00979D;
+}
+
+.device-name {
+  font-weight: bold;
+  display: block;
+}
+
+.device-description {
+  font-size: 0.9em;
+  color: #a0a0a0;
+  display: block;
+  margin-top: 5px;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.run-button,
+.clear-button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.run-button {
+  background-color: #00979D;
+  color: white;
+}
+
+.run-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.clear-button {
+  background-color: #333;
+  color: white;
+}
+
+.clear-button:hover {
+  background-color: #444;
+}
+
+.output-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.output {
+  flex: 1;
+  background-color: #333;
+  border-radius: 6px;
+  padding: 10px;
+  color: #fff;
+  font-family: monospace;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.simulation-area {
+  flex: 1;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  position: relative;
+  min-height: 400px;
+}
+
+.simulation-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  background-color: #1a1a1a;
+}
+
+@media (max-width: 768px) {
+  .simulator-content {
+    flex-direction: column;
+  }
+
+  .controls-panel {
+    width: 100%;
+    max-height: 300px;
+  }
+} 

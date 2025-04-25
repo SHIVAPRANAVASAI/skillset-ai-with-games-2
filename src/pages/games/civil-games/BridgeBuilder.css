@@ -1,0 +1,191 @@
+.bridge-builder {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: #ffffff;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  
+  .simulator-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .simulator-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #00D4FF 0%, #4D61FC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .simulator-content {
+    display: flex;
+    flex: 1;
+    gap: 2rem;
+    min-height: 0; /* Important for flex child */
+  }
+  
+  .controls-panel {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
+  }
+  
+  .bridge-selection {
+    margin-bottom: 2rem;
+  }
+  
+  .bridge-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .bridge-button {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 0.5rem;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+  }
+  
+  .bridge-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .bridge-button.selected {
+    background: linear-gradient(135deg, #4D61FC 0%, #00D4FF 100%);
+  }
+  
+  .bridge-name {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+  }
+  
+  .bridge-description {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  .parameters {
+    margin-bottom: 2rem;
+  }
+  
+  .parameter-group {
+    margin-bottom: 1rem;
+  }
+  
+  .parameter-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #a0a0a0;
+  }
+  
+  .parameter-group input[type="range"] {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    background: transparent;
+    -webkit-appearance: none;
+  }
+  
+  .parameter-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #4D61FC;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .parameter-group input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+  
+  .parameter-value {
+    display: block;
+    text-align: right;
+    font-size: 0.9rem;
+    color: #a0a0a0;
+  }
+  
+  .simulation-controls {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .start-button,
+  .reset-button {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .start-button {
+    background: linear-gradient(135deg, #4D61FC 0%, #00D4FF 100%);
+    color: white;
+  }
+  
+  .start-button.running {
+    background: linear-gradient(135deg, #FF4D61 0%, #FF00D4 100%);
+  }
+  
+  .reset-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .reset-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .canvas-container {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+    min-height: 0; /* Important for flex child */
+  }
+  
+  .simulation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .simulator-content {
+      flex-direction: column;
+    }
+  
+    .controls-panel {
+      width: 100%;
+      max-height: 300px;
+    }
+  
+    .canvas-container {
+      height: 400px;
+    }
+  }

@@ -1,0 +1,147 @@
+.logic-gates {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.simulator-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.simulator-header h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.simulator-header p {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+}
+
+.simulator-content {
+  display: flex;
+  gap: 2rem;
+  min-height: 600px;
+}
+
+.gates-panel {
+  width: 250px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gates-panel h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.gate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.gate-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.gate-button:hover {
+  background: #f0f0f0;
+  border-color: #3498db;
+}
+
+.gate-button.selected {
+  background: #3498db;
+  color: white;
+  border-color: #2980b9;
+}
+
+.gate-symbol {
+  font-weight: bold;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.controls {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.clear-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-button:hover {
+  background: #c0392b;
+}
+
+.canvas-container {
+  flex: 1;
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.circuit-canvas {
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+.circuit-stats {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+@media (max-width: 768px) {
+  .simulator-content {
+    flex-direction: column;
+  }
+
+  .gates-panel {
+    width: 100%;
+  }
+
+  .gate-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .gate-button {
+    flex: 1;
+    min-width: 120px;
+  }
+} 
