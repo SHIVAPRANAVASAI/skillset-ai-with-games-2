@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../../../config/firebase';
+import { grammarService } from '../../../services/grammarService';
 import './GrammarMaster.css';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
 
 const GrammarMaster = () => {
+  const [user] = useAuthState(auth);
   const [selectedLanguage, setSelectedLanguage] = useState('english');
   const [selectedTopic, setSelectedTopic] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -17,6 +23,12 @@ const GrammarMaster = () => {
   const [showHint, setShowHint] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [isGameComplete, setIsGameComplete] = useState(false);
+  const [globalPoints, setGlobalPoints] = useState(0);
+  const [totalCoins, setTotalCoins] = useState(0);
 
   const languages = [
     { id: 'english', name: 'English', color: '#FF6B6B' },
@@ -166,6 +178,59 @@ const GrammarMaster = () => {
     return () => clearInterval(interval);
   }, [isTimerRunning]);
 
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          setIsLoading(true);
+          const userRef = doc(db, 'profiles', user.uid);
+          const userDoc = await getDoc(userRef);
+          const userData = userDoc.data();
+          
+          // Load game history
+          const history = userData?.grammarHistory || [];
+          setQuestionHistory(history);
+          
+          // Load saved game state from localStorage
+          const savedState = localStorage.getItem(`grammarGameState_${user.uid}`);
+          if (savedState) {
+            const { score: savedScore, streak: savedStreak, maxStreak: savedMaxStreak } = JSON.parse(savedState);
+            setScore(savedScore);
+            setStreak(savedStreak);
+            setMaxStreak(savedMaxStreak);
+          }
+
+          // Get global points and coins from profiles collection
+          setGlobalPoints(userData?.stats?.totalPoints || 0);
+          setTotalCoins(userData?.coins || 0);
+
+          // Dispatch coins update event for global display
+          window.dispatchEvent(new CustomEvent('coinsUpdated', {
+            detail: { coins: userData?.coins || 0 }
+          }));
+        } catch (error) {
+          console.error('Error loading game data:', error);
+          setError('Failed to load game data');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadUserData();
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      const gameState = {
+        score,
+        streak,
+        maxStreak,
+        questionHistory
+      };
+      localStorage.setItem(`grammarGameState_${user.uid}`, JSON.stringify(gameState));
+    }
+  }, [score, streak, maxStreak, questionHistory, user]);
+
   const generateNewQuestion = () => {
     const topicQuestions = questions[selectedLanguage]?.[selectedTopic]?.[difficulty];
     if (topicQuestions && topicQuestions.length > 0) {
@@ -181,7 +246,7 @@ const GrammarMaster = () => {
     }
   };
 
-  const checkAnswer = () => {
+  const checkAnswer = async () => {
     if (!userAnswer.trim()) {
       setFeedback('Please enter your answer');
       return;
@@ -190,6 +255,10 @@ const GrammarMaster = () => {
     const isAnswerCorrect = userAnswer.toLowerCase().trim() === currentQuestion.answer.toLowerCase().trim();
     setIsCorrect(isAnswerCorrect);
     setIsTimerRunning(false);
+    
+    // Increment total questions
+    const newTotalQuestions = totalQuestions + 1;
+    setTotalQuestions(newTotalQuestions);
     
     if (isAnswerCorrect) {
       setScore(prevScore => prevScore + 1);
@@ -200,22 +269,119 @@ const GrammarMaster = () => {
         }
         return newStreak;
       });
-      setFeedback('Correct! Well done!');
-      setQuestionHistory(prev => [...prev, { 
-        question: currentQuestion.question, 
-        correct: true,
-        time: timer,
-        difficulty: difficulty
-      }]);
+
+      // Calculate points for this correct answer
+      const basePoints = 1; // 1 point per correct answer
+      const streakBonus = Math.min(streak, 3); // Bonus points for streak (max 3)
+      const difficultyBonus = difficulty === 'advanced' ? 2 : difficulty === 'intermediate' ? 1 : 0;
+      const pointsEarned = basePoints + streakBonus + difficultyBonus;
+      
+      try {
+        setIsLoading(true);
+        await grammarService.saveQuestionHistory(user.uid, {
+          question: currentQuestion.question,
+          answer: currentQuestion.answer,
+          userAnswer: userAnswer,
+          correct: true,
+          difficulty: difficulty,
+          language: selectedLanguage,
+          topic: selectedTopic,
+          time: timer,
+          pointsEarned: pointsEarned
+        });
+
+        await grammarService.updateGameStats(user.uid, {
+          correct: true,
+          time: timer,
+          streak: streak + 1,
+          maxStreak: Math.max(maxStreak, streak + 1),
+          language: selectedLanguage,
+          pointsEarned: pointsEarned
+        });
+
+        await grammarService.addCoins(user.uid, pointsEarned);
+      } catch (error) {
+        console.error('Error saving progress:', error);
+        setError('Failed to save progress. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+
+      setFeedback(`Correct! +${pointsEarned} points!`);
     } else {
       setStreak(0);
       setFeedback(`Incorrect. The correct answer is: ${currentQuestion.answer}. ${currentQuestion.explanation}`);
-      setQuestionHistory(prev => [...prev, { 
-        question: currentQuestion.question, 
-        correct: false,
-        time: timer,
-        difficulty: difficulty
-      }]);
+
+      try {
+        setIsLoading(true);
+        await grammarService.saveQuestionHistory(user.uid, {
+          question: currentQuestion.question,
+          answer: currentQuestion.answer,
+          userAnswer: userAnswer,
+          correct: false,
+          difficulty: difficulty,
+          language: selectedLanguage,
+          topic: selectedTopic,
+          time: timer,
+          pointsEarned: 0
+        });
+
+        await grammarService.updateGameStats(user.uid, {
+          correct: false,
+          time: timer,
+          streak: 0,
+          maxStreak: maxStreak,
+          language: selectedLanguage,
+          pointsEarned: 0
+        });
+      } catch (error) {
+        console.error('Error saving progress:', error);
+        setError('Failed to save progress. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    // Check if game is complete (5 questions)
+    if (newTotalQuestions >= 5) {
+      setIsGameComplete(true);
+      setIsTimerRunning(false);
+      
+      // Calculate final points
+      const correctAnswerPoints = score * 1; // 1 point per correct answer
+      const timeBonus = Math.max(0, 5 - Math.floor(timer / 60)); // Up to 5 bonus points for completing quickly
+      const streakBonus = maxStreak; // Points for max streak achieved
+      const difficultyBonus = difficulty === 'advanced' ? 10 : difficulty === 'intermediate' ? 5 : 0;
+      const totalPoints = correctAnswerPoints + timeBonus + streakBonus + difficultyBonus;
+      
+      try {
+        setIsLoading(true);
+        // Save final game stats
+        await grammarService.updateGameStats(user.uid, {
+          finalScore: score,
+          totalTime: timer,
+          maxStreak: maxStreak,
+          totalPoints: totalPoints,
+          language: selectedLanguage,
+          completed: true
+        });
+
+        setFeedback(
+          `Game Complete! You earned ${totalPoints} points!\n` +
+          `Correct Answers: ${correctAnswerPoints} points\n` +
+          `Time Bonus: ${timeBonus} points\n` +
+          `Streak Bonus: ${streakBonus} points\n` +
+          `Difficulty Bonus: ${difficultyBonus} points`
+        );
+      } catch (error) {
+        console.error('Error saving final score:', error);
+        setError('Failed to save final score. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Generate new question if game is not complete
+      generateNewQuestion();
     }
   };
 
@@ -238,10 +404,43 @@ const GrammarMaster = () => {
 
   return (
     <div className="grammar-master">
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p>Saving progress...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="error-message">
+          {error}
+          <button onClick={() => setError(null)}>Dismiss</button>
+        </div>
+      )}
+
       <div className="master-header">
         <h1>Grammar Master</h1>
         <p>Practice grammar rules with interactive exercises</p>
       </div>
+
+      {user && (
+        <div className="game-progress-panel">
+          <div className="progress-stats">
+            <div className="progress-stat-item">
+              <span className="stat-label">Total Coins</span>
+              <span className="stat-value coins">{totalCoins}</span>
+            </div>
+            <div className="progress-stat-item">
+              <span className="stat-label">Global Points</span>
+              <span className="stat-value points">{globalPoints}</span>
+            </div>
+            <div className="progress-stat-item">
+              <span className="stat-label">Current Score</span>
+              <span className="stat-value score">{score}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="master-content">
         <div className="language-selector">
@@ -306,62 +505,96 @@ const GrammarMaster = () => {
 
         {currentQuestion && (
           <div className="game-area">
-            <div className="stats-panel">
-              <div className="stat-item">
-                <span className="stat-label">Score:</span>
-                <span className="stat-value">{score}</span>
+            {isGameComplete ? (
+              <div className="game-complete-overlay">
+                <div className="game-complete-content">
+                  <h2>Game Complete!</h2>
+                  <div className="final-stats">
+                    <p>Final Score: {score} out of 5</p>
+                    <p>Time: {formatTime(timer)}</p>
+                    <p>Max Streak: {maxStreak}</p>
+                    <p className="total-points">Total Global Points: {globalPoints}</p>
+                  </div>
+                  <button 
+                    className="play-again-button"
+                    onClick={() => {
+                      setIsGameComplete(false);
+                      setTotalQuestions(0);
+                      setScore(0);
+                      setStreak(0);
+                      setMaxStreak(0);
+                      setTimer(0);
+                      generateNewQuestion();
+                    }}
+                  >
+                    Play Again
+                  </button>
+                </div>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Current Streak:</span>
-                <span className="stat-value">{streak}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Max Streak:</span>
-                <span className="stat-value">{maxStreak}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Time:</span>
-                <span className="stat-value">{formatTime(timer)}</span>
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="stats-panel">
+                  <div className="stat-item">
+                    <span className="stat-label">Score:</span>
+                    <span className="stat-value">{score}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Current Streak:</span>
+                    <span className="stat-value">{streak}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Max Streak:</span>
+                    <span className="stat-value">{maxStreak}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Time:</span>
+                    <span className="stat-value">{formatTime(timer)}</span>
+                  </div>
+                  <div className="stat-item global-points">
+                    <span className="stat-label">Global Points:</span>
+                    <span className="stat-value">{globalPoints}</span>
+                  </div>
+                </div>
 
-            <div className="question-display">
-              <h2>{currentQuestion.question}</h2>
-            </div>
+                <div className="question-display">
+                  <h2>{currentQuestion.question}</h2>
+                </div>
 
-            <div className="answer-section">
-              <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Enter your answer..."
-                onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
-              />
-              <div className="feedback" style={{ color: isCorrect === true ? '#22C55E' : isCorrect === false ? '#FF6B6B' : '#a0a0a0' }}>
-                {feedback}
-              </div>
-            </div>
+                <div className="answer-section">
+                  <input
+                    type="text"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    placeholder="Enter your answer..."
+                    onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
+                  />
+                  <div className="feedback" style={{ color: isCorrect === true ? '#22C55E' : isCorrect === false ? '#FF6B6B' : '#a0a0a0' }}>
+                    {feedback}
+                  </div>
+                </div>
 
-            <div className="hint-section">
-              {!showHint && !isCorrect && (
-                <button className="hint-button" onClick={() => setShowHint(true)}>
-                  Show Hint
-                </button>
-              )}
-              {showHint && <div className="hint-text">{hint}</div>}
-            </div>
+                <div className="hint-section">
+                  {!showHint && !isCorrect && (
+                    <button className="hint-button" onClick={() => setShowHint(true)}>
+                      Show Hint
+                    </button>
+                  )}
+                  {showHint && <div className="hint-text">{hint}</div>}
+                </div>
 
-            <div className="control-buttons">
-              <button className="control-button check" onClick={checkAnswer}>
-                Check Answer
-              </button>
-              <button className="control-button next" onClick={generateNewQuestion}>
-                Next Question
-              </button>
-              <button className="control-button reset" onClick={resetGame}>
-                Reset Game
-              </button>
-            </div>
+                <div className="control-buttons">
+                  <button className="control-button check" onClick={checkAnswer}>
+                    Check Answer
+                  </button>
+                  <button className="control-button next" onClick={generateNewQuestion}>
+                    Next Question
+                  </button>
+                  <button className="control-button reset" onClick={resetGame}>
+                    Reset Game
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

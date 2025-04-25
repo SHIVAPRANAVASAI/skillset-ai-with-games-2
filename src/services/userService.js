@@ -7,7 +7,7 @@ const auth = getAuth();
 // Initialize user data in Firestore
 export const initializeUserData = async (userId) => {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(db, 'profiles', userId);
     await setDoc(userRef, {
       coins: 0,
       totalPoints: 0,
@@ -25,7 +25,7 @@ export const initializeUserData = async (userId) => {
 // Get user data
 export const getUserData = async (userId) => {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(db, 'profiles', userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
       return userSnap.data();
@@ -40,7 +40,7 @@ export const getUserData = async (userId) => {
 // Add coins to user
 export const addCoins = async (userId, amount) => {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(db, 'profiles', userId);
     const userSnap = await getDoc(userRef);
     
     if (!userSnap.exists()) {
@@ -62,7 +62,7 @@ export const addCoins = async (userId, amount) => {
 // Update user's last login
 export const updateLastLogin = async (userId) => {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(db, 'profiles', userId);
     await setDoc(userRef, {
       lastLogin: new Date()
     }, { merge: true });
@@ -84,5 +84,66 @@ export const testFirestoreConnection = async () => {
   } catch (error) {
     console.error('Firestore connection test failed:', error);
     return false;
+  }
+};
+
+export const userService = {
+  async getUserProfile(userId) {
+    try {
+      const userRef = doc(db, 'profiles', userId);
+      const userDoc = await getDoc(userRef);
+      return userDoc.data();
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      throw error;
+    }
+  },
+
+  async createUserProfile(userId, userData) {
+    try {
+      const userRef = doc(db, 'profiles', userId);
+      await setDoc(userRef, {
+        ...userData,
+        createdAt: new Date(),
+        coins: 0,
+        stats: {
+          totalPoints: 0,
+          gamesCompleted: 0,
+          totalCorrectAnswers: 0,
+          totalCoins: 0
+        },
+        games: {
+          grammar: {
+            totalQuestions: 0,
+            correctAnswers: 0,
+            totalTime: 0,
+            maxStreak: 0,
+            gamesCompleted: 0,
+            totalPoints: 0
+          },
+          vocabulary: {
+            totalWords: 0,
+            correctWords: 0,
+            totalTime: 0,
+            maxStreak: 0,
+            gamesCompleted: 0,
+            totalPoints: 0
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
+  },
+
+  async updateUserProfile(userId, updates) {
+    try {
+      const userRef = doc(db, 'profiles', userId);
+      await updateDoc(userRef, updates);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
   }
 }; 

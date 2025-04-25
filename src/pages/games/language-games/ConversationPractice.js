@@ -1,5 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import './ConversationPractice.css';
+import { auth } from '../../../config/firebase';
+import { conversationService } from '../../../services/conversationService';
+import { onAuthStateChanged } from 'firebase/auth';
+import { Dialog } from '@headlessui/react';
+import { Modal, Button, Typography, Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
+
+// Helper function to check response accuracy
+const checkResponseAccuracy = (userResponse, correctResponses) => {
+  const normalizedUserResponse = userResponse.trim().toLowerCase();
+  const isCorrect = correctResponses.some(response => 
+    normalizedUserResponse === response.toLowerCase()
+  );
+
+  let feedback = isCorrect 
+    ? "Correct! Well done!" 
+    : "Not quite right. Try again or check the hint.";
+
+  return { isCorrect, feedback };
+};
 
 const ConversationPractice = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('english');
@@ -18,6 +40,12 @@ const ConversationPractice = () => {
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [user, setUser] = useState(null);
+  const [gameStartTime, setGameStartTime] = useState(null);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+  const MAX_QUESTIONS = 5;
 
   const languages = [
     { id: 'english', name: 'English', color: '#FF6B6B' },
@@ -120,6 +148,15 @@ const ConversationPractice = () => {
     }
   };
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     if (selectedScenario) {
       generateNewDialogue();
@@ -151,50 +188,177 @@ const ConversationPractice = () => {
     }
   };
 
-  const checkResponse = () => {
-    if (!userResponse.trim()) {
-      setFeedback('Please enter your response');
-      return;
+  const startNewGame = async () => {
+    // Ensure any pending updates are completed before resetting
+    if (user && dialogueHistory.length > 0) {
+      try {
+        // Calculate final stats
+        const correctAnswers = dialogueHistory.filter(item => item.isCorrect).length;
+        const totalDialogues = dialogueHistory.length;
+        const averageTime = Math.round(timer / totalDialogues);
+        const accuracyRate = correctAnswers / totalDialogues;
+        
+        // Calculate final game stats
+        const gameStats = {
+          correctAnswers,
+          totalDialogues: MAX_QUESTIONS,
+          averageTime,
+          maxStreak,
+          totalPoints,
+          totalTime: timer
+        };
+
+        console.log('Saving final stats before new game:', gameStats);
+
+        // Save final stats with isGameComplete flag
+        const result = await conversationService.updateGameStats(user.uid, {
+          ...gameStats,
+          lastGameScore: totalPoints,
+          lastGameTime: timer,
+          difficulty,
+          language: selectedLanguage,
+          isGameComplete: true,
+          accuracy: accuracyRate * 100
+        });
+
+        console.log('Stats saved before new game:', result);
+
+        // Verify the update
+        const userRef = doc(db, 'profiles', user.uid);
+        const afterUpdate = await getDoc(userRef);
+        console.log('Profile before starting new game:', afterUpdate.data());
+      } catch (error) {
+        console.error('Error saving final stats before new game:', error);
+      }
     }
 
-    const isResponseCorrect = currentDialogue.correctResponses.some(
-      response => userResponse.toLowerCase().trim() === response.toLowerCase().trim()
-    );
-    setIsCorrect(isResponseCorrect);
+    // Reset game state
+    setScore(0);
+    setStreak(0);
+    setMaxStreak(0);
+    setTimer(0);
+    setQuestionCount(0);
+    setGameStartTime(Date.now());
+    setIsTimerRunning(true);
+    setShowCompletionModal(false);
+    setDialogueHistory([]);
+    setUserResponse('');
+    setFeedback('');
+    setIsCorrect(null);
+    setShowHint(false);
+    setShowTranslation(false);
+    setTotalPoints(0);
+
+    // Generate new dialogue
+    generateNewDialogue();
+  };
+
+  const checkResponse = async () => {
+    if (!currentDialogue || !userResponse.trim()) return;
+
+    const responseCheck = checkResponseAccuracy(userResponse, currentDialogue.correctResponses);
+    const isAnswerCorrect = responseCheck.isCorrect;
+    
+    // Update streak and question count
+    let newStreak = isAnswerCorrect ? streak + 1 : 0;
+    const newQuestionCount = questionCount + 1;
+    setStreak(newStreak);
+    setMaxStreak(Math.max(maxStreak, newStreak));
+    setQuestionCount(newQuestionCount);
+
+    // Calculate points based on difficulty and streak
+    const difficultyMultiplier = {
+      'beginner': 1,
+      'intermediate': 2,
+      'advanced': 3
+    };
+    const points = isAnswerCorrect ? 10 * difficultyMultiplier[difficulty] * (1 + streak * 0.1) : 0;
+    const newTotalPoints = totalPoints + points;
+    setTotalPoints(newTotalPoints);
+
+    // Update feedback and history
+    setIsCorrect(isAnswerCorrect);
+    setFeedback(responseCheck.feedback);
+    setDialogueHistory([...dialogueHistory, {
+      prompt: currentDialogue.prompt,
+      userResponse: userResponse,
+      isCorrect: isAnswerCorrect,
+      time: timer
+    }]);
+
+    // Save progress if user is authenticated
+    if (user) {
+      try {
+        await conversationService.updateGameStats(user.uid, {
+          language: selectedLanguage,
+          correct: isAnswerCorrect,
+          pointsEarned: points,
+          streak: newStreak,
+          maxStreak: Math.max(maxStreak, newStreak),
+          time: timer,
+          difficulty: difficulty,
+          isGameComplete: false
+        });
+      } catch (error) {
+        console.error('Error updating game stats:', error);
+      }
+    }
+
+    setUserResponse('');
+    
+    // Check if game should end
+    if (newQuestionCount >= MAX_QUESTIONS) {
+      await finishGame();
+    } else {
+      generateNewDialogue();
+    }
+  };
+
+  const finishGame = async () => {
     setIsTimerRunning(false);
     
-    if (isResponseCorrect) {
-      setScore(prevScore => prevScore + 1);
-      setStreak(prevStreak => {
-        const newStreak = prevStreak + 1;
-        if (newStreak > maxStreak) {
-          setMaxStreak(newStreak);
-        }
-        return newStreak;
-      });
-      setFeedback('Great response!');
-      setDialogueHistory(prev => [...prev, { 
-        context: currentDialogue.context,
-        speaker: currentDialogue.speaker,
-        message: currentDialogue.message,
-        response: userResponse,
-        correct: true,
-        time: timer,
-        difficulty: difficulty
-      }]);
-    } else {
-      setStreak(0);
-      setFeedback(`Good try! Here are some possible responses: ${currentDialogue.correctResponses.join(', ')}`);
-      setDialogueHistory(prev => [...prev, { 
-        context: currentDialogue.context,
-        speaker: currentDialogue.speaker,
-        message: currentDialogue.message,
-        response: userResponse,
-        correct: false,
-        time: timer,
-        difficulty: difficulty
-      }]);
+    if (user) {
+      try {
+        // Calculate final stats
+        const correctAnswers = dialogueHistory.filter(item => item.isCorrect).length;
+        const totalDialogues = dialogueHistory.length;
+        const averageTime = Math.round(timer / totalDialogues);
+        const accuracyRate = correctAnswers / MAX_QUESTIONS;
+        
+        // Calculate final game stats
+        const gameStats = {
+          correctAnswers,
+          totalDialogues: MAX_QUESTIONS,
+          averageTime,
+          maxStreak,
+          totalPoints,
+          totalTime: timer
+        };
+
+        console.log('Final game stats:', gameStats);
+
+        // Save final stats with isGameComplete flag
+        const result = await conversationService.updateGameStats(user.uid, {
+          ...gameStats,
+          lastGameScore: totalPoints,
+          lastGameTime: timer,
+          difficulty,
+          language: selectedLanguage,
+          isGameComplete: true,
+          accuracy: accuracyRate * 100
+        });
+
+        console.log('Game completion result:', result);
+
+        // Verify the coins were added
+        const userRef = doc(db, 'profiles', user.uid);
+        const afterUpdate = await getDoc(userRef);
+        console.log('Profile after game completion:', afterUpdate.data());
+      } catch (error) {
+        console.error('Error updating final game stats:', error);
+      }
     }
+    setShowCompletionModal(true);
   };
 
   const resetPractice = () => {
@@ -214,176 +378,247 @@ const ConversationPractice = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const CompletionModal = ({ open, onClose, score, timer, onStartNewGame }) => {
+    const navigate = useNavigate();
+    const correctAnswers = dialogueHistory.filter(item => item.isCorrect).length;
+    const accuracyRate = (correctAnswers / MAX_QUESTIONS) * 100;
+    const [isStartingNewGame, setIsStartingNewGame] = useState(false);
+
+    const handleStartNewGame = async () => {
+      setIsStartingNewGame(true);
+      try {
+        await onStartNewGame();
+      } catch (error) {
+        console.error('Error starting new game:', error);
+      } finally {
+        setIsStartingNewGame(false);
+      }
+    };
+
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        aria-labelledby="completion-modal-title"
+        aria-describedby="completion-modal-description"
+      >
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+        }}>
+          <Typography id="completion-modal-title" variant="h6" component="h2" gutterBottom>
+            Game Complete!
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            Correct Answers: {correctAnswers} / {MAX_QUESTIONS}
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Accuracy: {accuracyRate.toFixed(1)}%
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Time: {Math.floor(timer / 60)}m {timer % 60}s
+          </Typography>
+          <Typography sx={{ mt: 1 }}>
+            Max Streak: {maxStreak}
+          </Typography>
+          <Typography sx={{ mt: 1, color: 'primary.main', fontWeight: 'bold' }}>
+            Total Points: {totalPoints}
+          </Typography>
+          <Typography sx={{ mt: 1, color: 'secondary.main', fontWeight: 'bold' }}>
+            Coins Earned: {Math.round((correctAnswers * 10 + maxStreak * 5 + (accuracyRate * 0.5) + (timer < MAX_QUESTIONS * 30 ? 20 : 0)) * (difficulty === 'advanced' ? 2 : difficulty === 'intermediate' ? 1.5 : 1))}
+          </Typography>
+          <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={() => navigate('/games')} variant="outlined" disabled={isStartingNewGame}>
+              Return to Menu
+            </Button>
+            <Button 
+              onClick={handleStartNewGame} 
+              variant="contained"
+              disabled={isStartingNewGame}
+            >
+              {isStartingNewGame ? 'Starting...' : 'Play Again'}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    );
+  };
+
   return (
-    <div className="conversation-practice">
-      <div className="practice-header">
+    <div className="container">
+      <div className="game-header">
         <h1>Conversation Practice</h1>
-        <p>Practice real-world conversations in different languages</p>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-label">Score</div>
+            <div className="stat-value">{score}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Streak</div>
+            <div className="stat-value">{streak}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Points</div>
+            <div className="stat-value">{totalPoints}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Time</div>
+            <div className="stat-value">{formatTime(timer)}</div>
+          </div>
+        </div>
       </div>
 
-      <div className="practice-content">
-        <div className="language-selector">
-          <h3>Select Language</h3>
-          <div className="language-buttons">
-            {languages.map(language => (
+      <div className="language-selector">
+        <h3>Select Language</h3>
+        <div className="language-buttons">
+          {languages.map(language => (
+            <button
+              key={language.id}
+              className={`language-button ${selectedLanguage === language.id ? 'selected' : ''}`}
+              onClick={() => {
+                setSelectedLanguage(language.id);
+                setSelectedScenario('');
+                resetPractice();
+              }}
+              style={{ '--language-color': language.color }}
+            >
+              {language.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {selectedLanguage && (
+        <div className="difficulty-selector">
+          <h3>Select Difficulty</h3>
+          <div className="difficulty-buttons">
+            {difficulties.map(level => (
               <button
-                key={language.id}
-                className={`language-button ${selectedLanguage === language.id ? 'selected' : ''}`}
+                key={level.id}
+                className={`difficulty-button ${difficulty === level.id ? 'selected' : ''}`}
                 onClick={() => {
-                  setSelectedLanguage(language.id);
+                  setDifficulty(level.id);
                   setSelectedScenario('');
                   resetPractice();
                 }}
-                style={{ '--language-color': language.color }}
+                style={{ '--difficulty-color': level.color }}
               >
-                {language.name}
+                {level.name}
               </button>
             ))}
           </div>
         </div>
+      )}
 
-        {selectedLanguage && (
-          <div className="difficulty-selector">
-            <h3>Select Difficulty</h3>
-            <div className="difficulty-buttons">
-              {difficulties.map(level => (
-                <button
-                  key={level.id}
-                  className={`difficulty-button ${difficulty === level.id ? 'selected' : ''}`}
-                  onClick={() => {
-                    setDifficulty(level.id);
-                    setSelectedScenario('');
-                    resetPractice();
-                  }}
-                  style={{ '--difficulty-color': level.color }}
-                >
-                  {level.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {selectedLanguage && (
-          <div className="scenario-selector">
-            <h3>Select Scenario</h3>
-            <div className="scenario-buttons">
-              {scenarios[selectedLanguage].map(scenario => (
-                <button
-                  key={scenario.id}
-                  className={`scenario-button ${selectedScenario === scenario.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedScenario(scenario.id)}
-                  style={{ '--scenario-color': scenario.color }}
-                >
-                  {scenario.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {currentDialogue && (
-          <div className="practice-area">
-            <div className="stats-panel">
-              <div className="stat-item">
-                <span className="stat-label">Score:</span>
-                <span className="stat-value">{score}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Current Streak:</span>
-                <span className="stat-value">{streak}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Max Streak:</span>
-                <span className="stat-value">{maxStreak}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Time:</span>
-                <span className="stat-value">{formatTime(timer)}</span>
-              </div>
-            </div>
-
-            <div className="dialogue-display">
-              <div className="context">{currentDialogue.context}</div>
-              <div className="message">
-                <span className="speaker">{currentDialogue.speaker}:</span>
-                <span className="text">{currentDialogue.message}</span>
-              </div>
-              {showTranslation && (
-                <div className="translation">
-                  Translation: {currentDialogue.translation}
-                </div>
-              )}
-            </div>
-
-            <div className="response-section">
-              <input
-                type="text"
-                value={userResponse}
-                onChange={(e) => setUserResponse(e.target.value)}
-                placeholder="Enter your response..."
-                onKeyPress={(e) => e.key === 'Enter' && checkResponse()}
-              />
-              <div className="feedback" style={{ color: isCorrect === true ? '#22C55E' : isCorrect === false ? '#FF6B6B' : '#a0a0a0' }}>
-                {feedback}
-              </div>
-            </div>
-
-            <div className="hint-section">
-              {!showHint && !isCorrect && (
-                <button className="hint-button" onClick={() => setShowHint(true)}>
-                  Show Hint
-                </button>
-              )}
-              {showHint && <div className="hint-text">{hint}</div>}
-            </div>
-
-            <div className="control-buttons">
-              <button className="control-button check" onClick={checkResponse}>
-                Check Response
-              </button>
-              <button className="control-button next" onClick={generateNewDialogue}>
-                Next Dialogue
-              </button>
-              <button className="control-button reset" onClick={resetPractice}>
-                Reset Practice
-              </button>
-              <button 
-                className="control-button translation" 
-                onClick={() => setShowTranslation(!showTranslation)}
+      {selectedLanguage && (
+        <div className="scenario-selector">
+          <h3>Select Scenario</h3>
+          <div className="scenario-buttons">
+            {scenarios[selectedLanguage].map(scenario => (
+              <button
+                key={scenario.id}
+                className={`scenario-button ${selectedScenario === scenario.id ? 'selected' : ''}`}
+                onClick={() => setSelectedScenario(scenario.id)}
+                style={{ '--scenario-color': scenario.color }}
               >
-                {showTranslation ? 'Hide Translation' : 'Show Translation'}
+                {scenario.name}
               </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {currentDialogue && (
+        <div className="practice-area">
+          <div className="dialogue-display">
+            <div className="context">{currentDialogue.context}</div>
+            <div className="message">
+              <span className="speaker">{currentDialogue.speaker}: </span>
+              {currentDialogue.message}
+            </div>
+            {showTranslation && (
+              <div className="translation">
+                Translation: {currentDialogue.translation}
+              </div>
+            )}
+          </div>
+
+          <div className="response-section">
+            <input
+              type="text"
+              value={userResponse}
+              onChange={(e) => setUserResponse(e.target.value)}
+              placeholder="Enter your response..."
+              onKeyPress={(e) => e.key === 'Enter' && checkResponse()}
+            />
+            <div className="feedback" style={{ color: isCorrect === true ? '#059669' : isCorrect === false ? '#dc2626' : '#94a3b8' }}>
+              {feedback}
             </div>
           </div>
-        )}
 
+          <div className="hint-section">
+            {!showHint && !isCorrect && (
+              <button className="hint-button" onClick={() => setShowHint(true)}>
+                Show Hint
+              </button>
+            )}
+            {showHint && <div className="hint-text">{hint}</div>}
+          </div>
+
+          <div className="control-buttons">
+            <button className="control-button check" onClick={checkResponse}>
+              Check Response
+            </button>
+            <button className="control-button next" onClick={generateNewDialogue}>
+              Next Dialogue
+            </button>
+            <button className="control-button translation" onClick={() => setShowTranslation(!showTranslation)}>
+              {showTranslation ? 'Hide Translation' : 'Show Translation'}
+            </button>
+            <button className="control-button reset" onClick={resetPractice}>
+              Reset Practice
+            </button>
+          </div>
+        </div>
+      )}
+
+      {dialogueHistory.length > 0 && (
         <div className="history-panel">
           <h3>Dialogue History</h3>
           <div className="history-list">
             {dialogueHistory.map((item, index) => (
-              <div key={index} className={`history-item ${item.correct ? 'correct' : 'incorrect'}`}>
-                <div className="context">{item.context}</div>
+              <div key={index} className={`history-item ${item.isCorrect ? 'correct' : 'incorrect'}`}>
+                <div className="context">{item.prompt}</div>
                 <div className="dialogue">
-                  <span className="speaker">{item.speaker}:</span>
-                  <span className="message">{item.message}</span>
-                </div>
-                <div className="response">
-                  <span className="label">Your response:</span>
-                  <span className="text">{item.response}</span>
+                  <span className="speaker">You: </span>
+                  {item.userResponse}
                 </div>
                 <div className="history-details">
-                  <span className="status">{item.correct ? '✓' : '✗'}</span>
-                  <span className="time">{formatTime(item.time)}</span>
-                  <span className="difficulty">{item.difficulty}</span>
+                  <span>{item.isCorrect ? '✓' : '✗'}</span>
+                  <span>{formatTime(item.time)}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
+
+      <CompletionModal
+        open={showCompletionModal}
+        onClose={() => setShowCompletionModal(false)}
+        score={score}
+        timer={timer}
+        onStartNewGame={startNewGame}
+      />
     </div>
   );
 };
 
-export default ConversationPractice; 
+export default ConversationPractice;

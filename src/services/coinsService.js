@@ -4,42 +4,68 @@ import { getAuth } from 'firebase/auth';
 const db = getFirestore();
 const auth = getAuth();
 
-// Get user's current coins
-export const getUserCoins = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not authenticated');
-
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (!userDoc.exists()) {
-      return 0;
+export const coinsService = {
+  // Get user's current coins
+  async getCoins(userId) {
+    try {
+      const userDoc = await getDoc(doc(db, 'profiles', userId));
+      return userDoc.exists() ? userDoc.data().coins || 0 : 0;
+    } catch (error) {
+      console.error('Error getting coins:', error);
+      throw error;
     }
-    return userDoc.data().coins || 0;
-  } catch (error) {
-    console.error('Error getting user coins:', error);
-    throw error;
-  }
-};
+  },
 
-// Add coins to user's balance
-export const addCoins = async (amount, gameId) => {
-  try {
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not authenticated');
+  // Add coins to user's balance
+  async addCoins(userId, amount) {
+    try {
+      const userRef = doc(db, 'profiles', userId);
+      await updateDoc(userRef, {
+        coins: increment(amount),
+        'stats.totalCoins': increment(amount)
+      });
+      
+      // Get updated coins balance
+      const updatedDoc = await getDoc(userRef);
+      return updatedDoc.data()?.coins || 0;
+    } catch (error) {
+      console.error('Error adding coins:', error);
+      throw error;
+    }
+  },
 
-    const userRef = doc(db, 'users', user.uid);
-    
-    // Update coins and total points
-    await updateDoc(userRef, {
-      coins: increment(amount),
-      totalPoints: increment(amount),
-      [`gamePoints.${gameId}`]: increment(amount)
-    });
+  // Spend coins from user's balance
+  async spendCoins(userId, amount) {
+    try {
+      const userDoc = await getDoc(doc(db, 'profiles', userId));
+      const currentCoins = userDoc.data()?.coins || 0;
 
-    return true;
-  } catch (error) {
-    console.error('Error adding coins:', error);
-    throw error;
+      if (currentCoins < amount) {
+        throw new Error('Insufficient coins');
+      }
+
+      const userRef = doc(db, 'profiles', userId);
+      await updateDoc(userRef, {
+        coins: increment(-amount)
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error spending coins:', error);
+      throw error;
+    }
+  },
+
+  // Check if user has enough coins
+  async hasEnoughCoins(userId, amount) {
+    try {
+      const userDoc = await getDoc(doc(db, 'profiles', userId));
+      const currentCoins = userDoc.data()?.coins || 0;
+      return currentCoins >= amount;
+    } catch (error) {
+      console.error('Error checking coins:', error);
+      return false;
+    }
   }
 };
 
