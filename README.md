@@ -59,25 +59,9 @@ Skillset AI was developed using the latest technologies to ensure a seamless use
 
 ---
 
-## 📍 **Get Involved**
-
-We’re always looking for contributors to help improve Skillset AI! 🚀
-
-- **Report Issues**: Found a bug? Let us know on our [GitHub Issues](https://github.com/jaideep-27/skillset-ai/issues). 🐞
-- **Contribute**: Want to add a new feature or improve the code? Check out our [GitHub Repo](https://github.com/jaideep-27/skillset-ai). 💻
-- **Feedback**: We’d love to hear your thoughts! Drop us a message or tweet at us. 📬
-
----
-
 ## 📱 **Try It Now!**
 
 Visit **[Skillset AI](https://skillset-ai.netlify.app/)** to start your learning journey today! 🎉
-
----
-
-## 🌟 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/jaideep-27/skillset-ai/LICENSE) file for details. 📜
 
 ---
 
