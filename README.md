@@ -81,12 +81,14 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 
 ---
 
-## 🙌 **Connect With Us**
+🌟 License  
+This project is licensed under the MIT License - see the LICENSE file for details. 📜
 
-- **GitHub**: [jaideep-27](https://github.com/jaideep-27)
-- **LinkedIn**: [Jaideep’s LinkedIn](https://www.linkedin.com/in/jaideep-27)
-- **Twitter**: [@Jaideep_27](https://twitter.com/Jaideep_27)
+🙌 Connect With Us  
+GitHub: [shivapranavasai](https://github.com/SHIVAPRANAVASAI)  
+LinkedIn: [Shiva Pranava Sai G](https://www.linkedin.com/in/shiva-pranava-sai-g-76145a279/)
 
+✨ Skillset AI - Where your learning journey begins
 ---
 
 ✨ **Skillset AI** - Where your learning journey begins! ✨
