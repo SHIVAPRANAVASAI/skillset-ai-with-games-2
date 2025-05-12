@@ -8,6 +8,12 @@ import uiuxDesignIcon from '../../assets/course-icons/uiux-design.svg';
 import dataScienceIcon from '../../assets/course-icons/data-science.svg';
 import mobileDevIcon from '../../assets/course-icons/mobile-dev.svg';
 import digitalMarketingIcon from '../../assets/course-icons/digital-marketing.svg';
+import cloudIcon from '../../assets/course-icons/cloud.svg';
+import devopsIcon from '../../assets/course-icons/devops.svg';
+import securityIcon from '../../assets/course-icons/security.svg';
+import mlIcon from '../../assets/course-icons/ml.svg';
+import blockchainIcon from '../../assets/course-icons/blockchain.svg';
+import iotIcon from '../../assets/course-icons/iot.svg';
 
 const LevelIcon = ({ level }) => {
   switch (level) {
@@ -49,7 +55,8 @@ const courses = [
     students: 156,
     rating: '4.8/5',
     price: 'Free',
-    image: introProgrammingIcon
+    image: introProgrammingIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/scientific-computing-with-python/'
   },
   {
     id: 2,
@@ -59,8 +66,9 @@ const courses = [
     level: 'Intermediate',
     students: 234,
     rating: '4.9/5',
-    price: '$79.99',
-    image: webDevIcon
+    price: 'Free',
+    image: webDevIcon,
+    courseLink: 'https://www.theodinproject.com/'
   },
   {
     id: 3,
@@ -70,8 +78,9 @@ const courses = [
     level: 'All Levels',
     students: 189,
     rating: '4.7/5',
-    price: '$89.99',
-    image: uiuxDesignIcon
+    price: 'Free',
+    image: uiuxDesignIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/responsive-web-design/'
   },
   {
     id: 4,
@@ -81,8 +90,9 @@ const courses = [
     level: 'Intermediate',
     students: 145,
     rating: '4.8/5',
-    price: '$99.99',
-    image: dataScienceIcon
+    price: 'Free',
+    image: dataScienceIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/data-analysis-with-python/'
   },
   {
     id: 5,
@@ -92,8 +102,9 @@ const courses = [
     level: 'Advanced',
     students: 167,
     rating: '4.9/5',
-    price: '$109.99',
-    image: mobileDevIcon
+    price: 'Free',
+    image: mobileDevIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/responsive-web-design/'
   },
   {
     id: 6,
@@ -103,8 +114,81 @@ const courses = [
     level: 'Beginner',
     students: 213,
     rating: '4.6/5',
-    price: '$69.99',
-    image: digitalMarketingIcon
+    price: 'Free',
+    image: digitalMarketingIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/responsive-web-design/'
+  },
+  {
+    id: 7,
+    title: 'Cloud Computing Basics',
+    description: 'Learn AWS, Azure, and Google Cloud fundamentals. Master cloud architecture and deployment.',
+    duration: '10 weeks',
+    level: 'Intermediate',
+    students: 178,
+    rating: '4.7/5',
+    price: 'Free',
+    image: cloudIcon,
+    courseLink: 'https://aws.amazon.com/training/learn-about-cloud-computing/'
+  },
+  {
+    id: 8,
+    title: 'DevOps Fundamentals',
+    description: 'Master CI/CD, Docker, Kubernetes, and infrastructure as code. Learn modern DevOps practices.',
+    duration: '12 weeks',
+    level: 'Intermediate',
+    students: 145,
+    rating: '4.8/5',
+    price: 'Free',
+    image: devopsIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/responsive-web-design/'
+  },
+  {
+    id: 9,
+    title: 'Cybersecurity Essentials',
+    description: 'Learn network security, ethical hacking, and security best practices. Protect systems and data.',
+    duration: '14 weeks',
+    level: 'Advanced',
+    students: 167,
+    rating: '4.9/5',
+    price: 'Free',
+    image: securityIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/information-security/'
+  },
+  {
+    id: 10,
+    title: 'Machine Learning Basics',
+    description: 'Master ML algorithms, neural networks, and deep learning. Build intelligent applications.',
+    duration: '16 weeks',
+    level: 'Advanced',
+    students: 189,
+    rating: '4.8/5',
+    price: 'Free',
+    image: mlIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/machine-learning-with-python/'
+  },
+  {
+    id: 11,
+    title: 'Blockchain Development',
+    description: 'Learn blockchain fundamentals, smart contracts, and decentralized applications.',
+    duration: '12 weeks',
+    level: 'Advanced',
+    students: 134,
+    rating: '4.7/5',
+    price: 'Free',
+    image: blockchainIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/responsive-web-design/'
+  },
+  {
+    id: 12,
+    title: 'Internet of Things (IoT)',
+    description: 'Master IoT concepts, sensors, and connected devices. Build smart home and industrial solutions.',
+    duration: '10 weeks',
+    level: 'Intermediate',
+    students: 156,
+    rating: '4.6/5',
+    price: 'Free',
+    image: iotIcon,
+    courseLink: 'https://www.freecodecamp.org/learn/responsive-web-design/'
   }
 ];
 
@@ -118,6 +202,15 @@ function Courses() {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
+  };
+
+  const handleCourseClick = (courseLink) => {
+    try {
+      window.open(courseLink, '_blank');
+    } catch (error) {
+      console.error('Error opening course link:', error);
+      alert('Sorry, the course link is currently unavailable. Please try again later.');
+    }
   };
 
   return (
@@ -150,10 +243,10 @@ function Courses() {
 
       <div className="courses-grid">
         {courses.map((course) => (
-          <div key={course.id} className="course-card">
+          <div key={course.id} className="course-card" onClick={() => handleCourseClick(course.courseLink)}>
             <div className="course-content">
               <div className="course-icon">
-                <img src={course.image} alt="" aria-hidden="true" />
+                <img src={course.image} alt={course.title} />
               </div>
               <h2 className="course-title">{course.title}</h2>
               <p className="course-description">{course.description}</p>

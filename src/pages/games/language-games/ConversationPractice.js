@@ -295,7 +295,7 @@ const ConversationPractice = () => {
           pointsEarned: points,
           streak: newStreak,
           maxStreak: Math.max(maxStreak, newStreak),
-          time: timer,
+        time: timer,
           difficulty: difficulty,
           isGameComplete: false
         });
@@ -356,7 +356,7 @@ const ConversationPractice = () => {
         console.log('Profile after game completion:', afterUpdate.data());
       } catch (error) {
         console.error('Error updating final game stats:', error);
-      }
+    }
     }
     setShowCompletionModal(true);
   };
@@ -475,119 +475,119 @@ const ConversationPractice = () => {
         </div>
       </div>
 
-      <div className="language-selector">
-        <h3>Select Language</h3>
-        <div className="language-buttons">
-          {languages.map(language => (
-            <button
-              key={language.id}
-              className={`language-button ${selectedLanguage === language.id ? 'selected' : ''}`}
-              onClick={() => {
-                setSelectedLanguage(language.id);
-                setSelectedScenario('');
-                resetPractice();
-              }}
-              style={{ '--language-color': language.color }}
-            >
-              {language.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {selectedLanguage && (
-        <div className="difficulty-selector">
-          <h3>Select Difficulty</h3>
-          <div className="difficulty-buttons">
-            {difficulties.map(level => (
+        <div className="language-selector">
+          <h3>Select Language</h3>
+          <div className="language-buttons">
+            {languages.map(language => (
               <button
-                key={level.id}
-                className={`difficulty-button ${difficulty === level.id ? 'selected' : ''}`}
+                key={language.id}
+                className={`language-button ${selectedLanguage === language.id ? 'selected' : ''}`}
                 onClick={() => {
-                  setDifficulty(level.id);
+                  setSelectedLanguage(language.id);
                   setSelectedScenario('');
                   resetPractice();
                 }}
-                style={{ '--difficulty-color': level.color }}
+                style={{ '--language-color': language.color }}
               >
-                {level.name}
+                {language.name}
               </button>
             ))}
           </div>
         </div>
-      )}
 
-      {selectedLanguage && (
-        <div className="scenario-selector">
-          <h3>Select Scenario</h3>
-          <div className="scenario-buttons">
-            {scenarios[selectedLanguage].map(scenario => (
-              <button
-                key={scenario.id}
-                className={`scenario-button ${selectedScenario === scenario.id ? 'selected' : ''}`}
-                onClick={() => setSelectedScenario(scenario.id)}
-                style={{ '--scenario-color': scenario.color }}
-              >
-                {scenario.name}
-              </button>
-            ))}
+        {selectedLanguage && (
+          <div className="difficulty-selector">
+            <h3>Select Difficulty</h3>
+            <div className="difficulty-buttons">
+              {difficulties.map(level => (
+                <button
+                  key={level.id}
+                  className={`difficulty-button ${difficulty === level.id ? 'selected' : ''}`}
+                  onClick={() => {
+                    setDifficulty(level.id);
+                    setSelectedScenario('');
+                    resetPractice();
+                  }}
+                  style={{ '--difficulty-color': level.color }}
+                >
+                  {level.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {currentDialogue && (
-        <div className="practice-area">
-          <div className="dialogue-display">
-            <div className="context">{currentDialogue.context}</div>
-            <div className="message">
+        {selectedLanguage && (
+          <div className="scenario-selector">
+            <h3>Select Scenario</h3>
+            <div className="scenario-buttons">
+              {scenarios[selectedLanguage].map(scenario => (
+                <button
+                  key={scenario.id}
+                  className={`scenario-button ${selectedScenario === scenario.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedScenario(scenario.id)}
+                  style={{ '--scenario-color': scenario.color }}
+                >
+                  {scenario.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentDialogue && (
+          <div className="practice-area">
+            <div className="dialogue-display">
+              <div className="context">{currentDialogue.context}</div>
+              <div className="message">
               <span className="speaker">{currentDialogue.speaker}: </span>
               {currentDialogue.message}
-            </div>
-            {showTranslation && (
-              <div className="translation">
-                Translation: {currentDialogue.translation}
               </div>
-            )}
-          </div>
-
-          <div className="response-section">
-            <input
-              type="text"
-              value={userResponse}
-              onChange={(e) => setUserResponse(e.target.value)}
-              placeholder="Enter your response..."
-              onKeyPress={(e) => e.key === 'Enter' && checkResponse()}
-            />
-            <div className="feedback" style={{ color: isCorrect === true ? '#059669' : isCorrect === false ? '#dc2626' : '#94a3b8' }}>
-              {feedback}
+              {showTranslation && (
+                <div className="translation">
+                  Translation: {currentDialogue.translation}
+                </div>
+              )}
             </div>
-          </div>
 
-          <div className="hint-section">
-            {!showHint && !isCorrect && (
-              <button className="hint-button" onClick={() => setShowHint(true)}>
-                Show Hint
+            <div className="response-section">
+              <input
+                type="text"
+                value={userResponse}
+                onChange={(e) => setUserResponse(e.target.value)}
+                placeholder="Enter your response..."
+                onKeyPress={(e) => e.key === 'Enter' && checkResponse()}
+              />
+            <div className="feedback" style={{ color: isCorrect === true ? '#059669' : isCorrect === false ? '#dc2626' : '#94a3b8' }}>
+                {feedback}
+              </div>
+            </div>
+
+            <div className="hint-section">
+              {!showHint && !isCorrect && (
+                <button className="hint-button" onClick={() => setShowHint(true)}>
+                  Show Hint
+                </button>
+              )}
+              {showHint && <div className="hint-text">{hint}</div>}
+            </div>
+
+            <div className="control-buttons">
+              <button className="control-button check" onClick={checkResponse}>
+                Check Response
               </button>
-            )}
-            {showHint && <div className="hint-text">{hint}</div>}
-          </div>
-
-          <div className="control-buttons">
-            <button className="control-button check" onClick={checkResponse}>
-              Check Response
-            </button>
-            <button className="control-button next" onClick={generateNewDialogue}>
-              Next Dialogue
-            </button>
+              <button className="control-button next" onClick={generateNewDialogue}>
+                Next Dialogue
+              </button>
             <button className="control-button translation" onClick={() => setShowTranslation(!showTranslation)}>
               {showTranslation ? 'Hide Translation' : 'Show Translation'}
             </button>
-            <button className="control-button reset" onClick={resetPractice}>
-              Reset Practice
-            </button>
+              <button className="control-button reset" onClick={resetPractice}>
+                Reset Practice
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {dialogueHistory.length > 0 && (
         <div className="history-panel">
@@ -621,4 +621,4 @@ const ConversationPractice = () => {
   );
 };
 
-export default ConversationPractice;
+export default ConversationPractice; 

@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { FiClock, FiBook, FiAward, FiDollarSign, FiUser } from 'react-icons/fi';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ErrorMessage from '../../components/common/ErrorMessage';
 import './CourseDetail.css';
 
 // Mock course data
@@ -84,24 +89,79 @@ const COURSES_DATA = {
 
 const CourseDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [enrolling, setEnrolling] = useState(false);
+  const auth = getAuth();
+  const db = getFirestore();
 
   useEffect(() => {
-    // Simulate API call with setTimeout
-    setTimeout(() => {
-      const courseData = COURSES_DATA[id];
-      setCourse(courseData || null);
+    const fetchCourse = async () => {
+      try {
+        const courseDoc = await getDoc(doc(db, 'courses', id));
+        if (courseDoc.exists()) {
+          setCourse({ id: courseDoc.id, ...courseDoc.data() });
+        } else {
+          setError('Course not found');
+        }
+      } catch (error) {
+        console.error('Error fetching course:', error);
+        setError('Failed to load course details');
+      } finally {
       setLoading(false);
-    }, 500);
-  }, [id]);
+      }
+    };
+
+    fetchCourse();
+  }, [id, db]);
+
+  const handleEnroll = async () => {
+    if (!auth.currentUser) {
+      navigate('/login', { state: { from: `/courses/${id}` } });
+      return;
+    }
+
+    try {
+      setEnrolling(true);
+      
+      // Update user's enrolled courses
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      await updateDoc(userRef, {
+        enrolledCourses: arrayUnion({
+          courseId: id,
+          enrolledAt: new Date().toISOString(),
+          progress: 0,
+          status: 'active'
+        })
+      });
+
+      // Update course enrollment count
+      const courseRef = doc(db, 'courses', id);
+      await updateDoc(courseRef, {
+        enrollmentCount: (course.enrollmentCount || 0) + 1
+      });
+
+      navigate(`/dashboard/courses/${id}`);
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      setError('Failed to enroll in course. Please try again.');
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
   }
 
   if (!course) {
-    return <div className="error">Course not found</div>;
+    return <ErrorMessage message="Course not found" />;
   }
 
   return (
@@ -110,18 +170,40 @@ const CourseDetail = () => {
         <h1>{course.title}</h1>
         <p className="course-description">{course.description}</p>
         <div className="course-meta">
-          <span className="instructor">By {course.instructor}</span>
-          <span className="duration">{course.duration}</span>
-          <span className="level">{course.level}</span>
+          <div className="meta-item">
+            <FiUser className="meta-icon" />
+            <span>Instructor: {course.instructorName}</span>
+          </div>
+          <div className="meta-item">
+            <FiClock className="meta-icon" />
+            <span>Duration: {course.duration}</span>
+          </div>
+          <div className="meta-item">
+            <FiAward className="meta-icon" />
+            <span>Level: {course.grade}</span>
+          </div>
+          <div className="meta-item">
+            <FiBook className="meta-icon" />
+            <span>Modules: {course.modules?.length || 0}</span>
+          </div>
+          <div className="meta-item">
+            <FiDollarSign className="meta-icon" />
+            <span>Price: ${course.price || 0}</span>
+          </div>
         </div>
       </div>
 
       <div className="course-content">
         <h2>Course Content</h2>
+        {course.modules?.length > 0 ? (
         <div className="modules">
           {course.modules.map((module, index) => (
             <div key={index} className="module">
-              <h3>{module.title}</h3>
+                <h3>
+                  <span className="module-number">Module {index + 1}</span>
+                  {module.title}
+                </h3>
+                {module.lessons?.length > 0 ? (
               <ul>
                 {module.lessons.map((lesson, lessonIndex) => (
                   <li key={lessonIndex}>
@@ -130,32 +212,57 @@ const CourseDetail = () => {
                   </li>
                 ))}
               </ul>
+                ) : (
+                  <p className="no-content">No lessons available for this module</p>
+                )}
             </div>
           ))}
         </div>
+        ) : (
+          <p className="no-content">No modules available for this course</p>
+        )}
       </div>
 
       <div className="course-features">
         <h2>What You'll Learn</h2>
-        <ul>
+        {course.learningObjectives?.length > 0 ? (
+          <ul className="objectives-list">
           {course.learningObjectives.map((objective, index) => (
             <li key={index}>{objective}</li>
           ))}
         </ul>
+        ) : (
+          <p className="no-content">No learning objectives specified</p>
+        )}
       </div>
 
       <div className="course-requirements">
         <h2>Requirements</h2>
-        <ul>
+        {course.requirements?.length > 0 ? (
+          <ul className="requirements-list">
           {course.requirements.map((requirement, index) => (
             <li key={index}>{requirement}</li>
           ))}
         </ul>
+        ) : (
+          <p className="no-content">No specific requirements for this course</p>
+        )}
       </div>
 
       <div className="enroll-section">
-        <button className="enroll-button">Enroll Now</button>
-        <div className="price">{course.price}</div>
+        <div className="price-tag">${course.price || 0}</div>
+        <button 
+          className={`enroll-button ${enrolling ? 'loading' : ''}`}
+          onClick={handleEnroll}
+          disabled={enrolling}
+        >
+          {enrolling ? 'Enrolling...' : 'Enroll Now'}
+        </button>
+        {course.enrollmentCount > 0 && (
+          <div className="enrollment-count">
+            {course.enrollmentCount} student{course.enrollmentCount !== 1 ? 's' : ''} enrolled
+          </div>
+        )}
       </div>
     </div>
   );

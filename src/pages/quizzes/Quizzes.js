@@ -1,59 +1,25 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import './Quizzes.css';
-
-const QUIZZES_DATA = [
-  {
-    id: 'web-fundamentals',
-    title: 'Web Development Fundamentals',
-    description: 'Test your knowledge of HTML, CSS, and JavaScript basics',
-    category: 'Web Development',
-    difficulty: 'Beginner',
-    questions: 20,
-    timeLimit: 30,
-    completions: 3245,
-    rating: 4.7
-  },
-  {
-    id: 'python-basics',
-    title: 'Python Programming Basics',
-    description: 'Essential Python concepts every developer should know',
-    category: 'Programming',
-    difficulty: 'Beginner',
-    questions: 25,
-    timeLimit: 35,
-    completions: 2876,
-    rating: 4.9
-  },
-  {
-    id: 'data-structures',
-    title: 'Data Structures & Algorithms',
-    description: 'Common data structures and algorithmic concepts',
-    category: 'Computer Science',
-    difficulty: 'Intermediate',
-    questions: 30,
-    timeLimit: 45,
-    completions: 1567,
-    rating: 4.8
-  },
-  {
-    id: 'system-design',
-    title: 'System Design Principles',
-    description: 'Advanced concepts in software architecture and system design',
-    category: 'Software Engineering',
-    difficulty: 'Advanced',
-    questions: 15,
-    timeLimit: 40,
-    completions: 987,
-    rating: 4.6
-  }
-];
+import { QUIZZES } from './quizData';
+import excitedGoat from '../../assets/excitet-goat.png';
+import goodGoat from '../../assets/good-goat.png';
+import angryGoat from '../../assets/angry-goat.png';
+import sadGoat from '../../assets/sad-goat.png';
 
 function Quizzes() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [difficulty, setDifficulty] = useState('');
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [quizComplete, setQuizComplete] = useState(false);
 
-  const filteredQuizzes = QUIZZES_DATA.filter(quiz => {
+  const filteredQuizzes = Object.entries(QUIZZES).filter(([key, quiz]) => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          quiz.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDifficulty = !difficulty || quiz.difficulty === difficulty;
@@ -68,9 +34,129 @@ function Quizzes() {
   ];
 
   const handleStartQuiz = (quizId) => {
-    // TODO: Implement quiz start logic
-    console.log('Starting quiz:', quizId);
+    setSelectedQuiz(QUIZZES[quizId]);
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowExplanation(false);
+    setSelectedAnswer(null);
+    setQuizComplete(false);
   };
+
+  const handleAnswer = (answerIndex) => {
+    setSelectedAnswer(answerIndex);
+    const correct = answerIndex === selectedQuiz.questions[currentQuestion].correctAnswer;
+    if (correct) setScore(score + 1);
+    setShowExplanation(true);
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < selectedQuiz.questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    } else {
+      setQuizComplete(true);
+    }
+  };
+
+  const restartQuiz = () => {
+    setSelectedQuiz(null);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setQuizComplete(false);
+  };
+
+  if (selectedQuiz) {
+    if (quizComplete) {
+      const percentage = (score / selectedQuiz.questions.length) * 100;
+      let goatImage, message;
+
+      if (percentage >= 80) {
+        goatImage = excitedGoat;
+        message = "Amazing work! You're absolutely crushing it! 🎉 Keep up the fantastic learning!";
+      } else if (percentage >= 60) {
+        goatImage = goodGoat;
+        message = "Great job! You're making excellent progress! 👍 Keep pushing forward!";
+      } else if (percentage >= 30) {
+        goatImage = angryGoat;
+        message = "You're on the right track! Keep practicing and you'll improve! 💪";
+      } else {
+        goatImage = sadGoat;
+        message = "Don't worry! Every expert was once a beginner. Keep learning! 🌟";
+      }
+
+      return (
+        <div className="quiz-complete">
+          <h2>Quiz Complete!</h2>
+          <div className="score-display">
+            <div className="score">
+              {score}/{selectedQuiz.questions.length}
+            </div>
+            <p>Correct Answers</p>
+          </div>
+          <div className="goat-display">
+            <img src={goatImage} alt="Result goat" className="result-goat" />
+            <p className="performance-message">{message}</p>
+          </div>
+          <button onClick={restartQuiz}>Try Another Quiz</button>
+        </div>
+      );
+    }
+
+    const question = selectedQuiz.questions[currentQuestion];
+
+    return (
+      <div className="quiz-container">
+        <div className="quiz-header">
+          <h2>{selectedQuiz.title}</h2>
+          <div className="quiz-progress">
+            Question {currentQuestion + 1} of {selectedQuiz.questions.length}
+          </div>
+        </div>
+
+        <div className="question-card">
+          <h3>{question.question}</h3>
+          
+          <div className="options">
+            {question.options.map((option, index) => (
+              <button
+                key={index}
+                className={`option-button ${
+                  selectedAnswer === index
+                    ? index === question.correctAnswer
+                      ? 'correct'
+                      : 'incorrect'
+                    : ''
+                } ${selectedAnswer !== null ? 'disabled' : ''}`}
+                onClick={() => handleAnswer(index)}
+                disabled={selectedAnswer !== null}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          {showExplanation && (
+            <div className="explanation">
+              <h4>
+                {selectedAnswer === question.correctAnswer
+                  ? "Correct! 🎉"
+                  : "Incorrect 😕"}
+              </h4>
+              <p>{question.explanation}</p>
+              <button onClick={nextQuestion}>
+                {currentQuestion < selectedQuiz.questions.length - 1
+                  ? "Next Question"
+                  : "Complete Quiz"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -125,41 +211,38 @@ function Quizzes() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            {filteredQuizzes.map((quiz, index) => (
+            {filteredQuizzes.map(([key, quiz], index) => (
               <motion.div 
-                key={quiz.id}
+                key={key}
                 className="quiz-card"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                onClick={() => handleStartQuiz(quiz.id)}
+                onClick={() => handleStartQuiz(key)}
               >
                 <div className="quiz-header">
                   <h2>{quiz.title}</h2>
-                  <span className={`quiz-badge ${quiz.difficulty.toLowerCase()}`}>
-                    {quiz.difficulty}
+                  <span className={`quiz-badge ${quiz.difficulty?.toLowerCase() || 'beginner'}`}>
+                    {quiz.difficulty || 'Beginner'}
                   </span>
                 </div>
                 <p>{quiz.description}</p>
                 <div className="quiz-meta">
-                  <span>{quiz.category}</span>
+                  <span>{quiz.category || 'Programming'}</span>
                 </div>
                 <div className="quiz-details">
                   <div className="detail">
-                    <span className="detail-value">{quiz.questions}</span>
+                    <span className="detail-value">{quiz.questions.length}</span>
                     <span className="detail-label">Questions</span>
                   </div>
                   <div className="detail">
-                    <span className="detail-value">{quiz.timeLimit}m</span>
+                    <span className="detail-value">10m</span>
                     <span className="detail-label">Time Limit</span>
                   </div>
                   <div className="detail">
-                    <span className="detail-value">{quiz.rating}/5</span>
+                    <span className="detail-value">4.5/5</span>
                     <span className="detail-label">Rating</span>
                   </div>
-                </div>
-                <div className="quiz-stats">
-                  <span>{quiz.completions.toLocaleString()} completions</span>
                 </div>
                 <button className="start-button">
                   Start Quiz

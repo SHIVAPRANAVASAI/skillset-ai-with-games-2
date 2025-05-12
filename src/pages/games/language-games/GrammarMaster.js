@@ -279,7 +279,7 @@ const GrammarMaster = () => {
       try {
         setIsLoading(true);
         await grammarService.saveQuestionHistory(user.uid, {
-          question: currentQuestion.question,
+        question: currentQuestion.question, 
           answer: currentQuestion.answer,
           userAnswer: userAnswer,
           correct: true,
@@ -291,8 +291,8 @@ const GrammarMaster = () => {
         });
 
         await grammarService.updateGameStats(user.uid, {
-          correct: true,
-          time: timer,
+        correct: true,
+        time: timer,
           streak: streak + 1,
           maxStreak: Math.max(maxStreak, streak + 1),
           language: selectedLanguage,
@@ -315,7 +315,7 @@ const GrammarMaster = () => {
       try {
         setIsLoading(true);
         await grammarService.saveQuestionHistory(user.uid, {
-          question: currentQuestion.question,
+        question: currentQuestion.question, 
           answer: currentQuestion.answer,
           userAnswer: userAnswer,
           correct: false,
@@ -327,8 +327,8 @@ const GrammarMaster = () => {
         });
 
         await grammarService.updateGameStats(user.uid, {
-          correct: false,
-          time: timer,
+        correct: false,
+        time: timer,
           streak: 0,
           maxStreak: maxStreak,
           language: selectedLanguage,
@@ -533,66 +533,66 @@ const GrammarMaster = () => {
               </div>
             ) : (
               <>
-                <div className="stats-panel">
-                  <div className="stat-item">
-                    <span className="stat-label">Score:</span>
-                    <span className="stat-value">{score}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Current Streak:</span>
-                    <span className="stat-value">{streak}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Max Streak:</span>
-                    <span className="stat-value">{maxStreak}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Time:</span>
-                    <span className="stat-value">{formatTime(timer)}</span>
-                  </div>
+            <div className="stats-panel">
+              <div className="stat-item">
+                <span className="stat-label">Score:</span>
+                <span className="stat-value">{score}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Current Streak:</span>
+                <span className="stat-value">{streak}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Max Streak:</span>
+                <span className="stat-value">{maxStreak}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Time:</span>
+                <span className="stat-value">{formatTime(timer)}</span>
+              </div>
                   <div className="stat-item global-points">
                     <span className="stat-label">Global Points:</span>
                     <span className="stat-value">{globalPoints}</span>
                   </div>
-                </div>
+            </div>
 
-                <div className="question-display">
-                  <h2>{currentQuestion.question}</h2>
-                </div>
+            <div className="question-display">
+              <h2>{currentQuestion.question}</h2>
+            </div>
 
-                <div className="answer-section">
-                  <input
-                    type="text"
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    placeholder="Enter your answer..."
-                    onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
-                  />
-                  <div className="feedback" style={{ color: isCorrect === true ? '#22C55E' : isCorrect === false ? '#FF6B6B' : '#a0a0a0' }}>
-                    {feedback}
-                  </div>
-                </div>
+            <div className="answer-section">
+              <input
+                type="text"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                placeholder="Enter your answer..."
+                onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
+              />
+              <div className="feedback" style={{ color: isCorrect === true ? '#22C55E' : isCorrect === false ? '#FF6B6B' : '#a0a0a0' }}>
+                {feedback}
+              </div>
+            </div>
 
-                <div className="hint-section">
-                  {!showHint && !isCorrect && (
-                    <button className="hint-button" onClick={() => setShowHint(true)}>
-                      Show Hint
-                    </button>
-                  )}
-                  {showHint && <div className="hint-text">{hint}</div>}
-                </div>
+            <div className="hint-section">
+              {!showHint && !isCorrect && (
+                <button className="hint-button" onClick={() => setShowHint(true)}>
+                  Show Hint
+                </button>
+              )}
+              {showHint && <div className="hint-text">{hint}</div>}
+            </div>
 
-                <div className="control-buttons">
-                  <button className="control-button check" onClick={checkAnswer}>
-                    Check Answer
-                  </button>
-                  <button className="control-button next" onClick={generateNewQuestion}>
-                    Next Question
-                  </button>
-                  <button className="control-button reset" onClick={resetGame}>
-                    Reset Game
-                  </button>
-                </div>
+            <div className="control-buttons">
+              <button className="control-button check" onClick={checkAnswer}>
+                Check Answer
+              </button>
+              <button className="control-button next" onClick={generateNewQuestion}>
+                Next Question
+              </button>
+              <button className="control-button reset" onClick={resetGame}>
+                Reset Game
+              </button>
+            </div>
               </>
             )}
           </div>

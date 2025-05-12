@@ -1,4 +1,4 @@
-import { getFirestore, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc, increment, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const db = getFirestore();
@@ -9,7 +9,18 @@ export const coinsService = {
   async getCoins(userId) {
     try {
       const userDoc = await getDoc(doc(db, 'profiles', userId));
-      return userDoc.exists() ? userDoc.data().coins || 0 : 0;
+      if (!userDoc.exists()) {
+        // Initialize user data if it doesn't exist
+        await setDoc(doc(db, 'profiles', userId), {
+          coins: 0,
+          totalPoints: 0,
+          gamePoints: {},
+          createdAt: new Date(),
+          lastLogin: new Date()
+        });
+        return 0;
+      }
+      return userDoc.data().coins || 0;
     } catch (error) {
       console.error('Error getting coins:', error);
       throw error;
@@ -20,9 +31,31 @@ export const coinsService = {
   async addCoins(userId, amount) {
     try {
       const userRef = doc(db, 'profiles', userId);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        // Initialize user data if it doesn't exist
+        await setDoc(userRef, {
+          coins: amount,
+          totalPoints: amount,
+          gamePoints: {},
+          createdAt: new Date(),
+          lastLogin: new Date(),
+          stats: {
+            totalCoins: amount,
+            totalPoints: amount,
+            gamesCompleted: 0,
+            totalCorrectAnswers: 0
+          }
+        });
+        return amount;
+      }
+
       await updateDoc(userRef, {
         coins: increment(amount),
-        'stats.totalCoins': increment(amount)
+        'stats.totalCoins': increment(amount),
+        'stats.totalPoints': increment(amount),
+        lastLogin: new Date()
       });
       
       // Get updated coins balance
@@ -38,15 +71,19 @@ export const coinsService = {
   async spendCoins(userId, amount) {
     try {
       const userDoc = await getDoc(doc(db, 'profiles', userId));
-      const currentCoins = userDoc.data()?.coins || 0;
+      if (!userDoc.exists()) {
+        throw new Error('User not found');
+      }
 
+      const currentCoins = userDoc.data()?.coins || 0;
       if (currentCoins < amount) {
         throw new Error('Insufficient coins');
       }
 
       const userRef = doc(db, 'profiles', userId);
       await updateDoc(userRef, {
-        coins: increment(-amount)
+        coins: increment(-amount),
+        lastLogin: new Date()
       });
 
       return true;
@@ -60,6 +97,9 @@ export const coinsService = {
   async hasEnoughCoins(userId, amount) {
     try {
       const userDoc = await getDoc(doc(db, 'profiles', userId));
+      if (!userDoc.exists()) {
+        return false;
+      }
       const currentCoins = userDoc.data()?.coins || 0;
       return currentCoins >= amount;
     } catch (error) {

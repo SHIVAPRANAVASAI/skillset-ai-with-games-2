@@ -3,21 +3,38 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../config/firebase';
 import { getUserData } from '../services/userService';
 import { FaCoins } from 'react-icons/fa';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 const CoinsDisplay = () => {
   const [user] = useAuthState(auth);
   const [coins, setCoins] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCoins = async () => {
       if (user) {
         try {
+          setIsLoading(true);
           const userData = await getUserData(user.uid);
           if (userData) {
             setCoins(userData.coins || 0);
+          } else {
+            // If user data doesn't exist, initialize it
+            const userRef = doc(db, 'profiles', user.uid);
+            await setDoc(userRef, {
+              coins: 0,
+              totalPoints: 0,
+              gamePoints: {},
+              createdAt: new Date(),
+              lastLogin: new Date()
+            });
+            setCoins(0);
           }
         } catch (error) {
           console.error('Error fetching coins:', error);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
@@ -51,7 +68,7 @@ const CoinsDisplay = () => {
       backdropFilter: 'blur(10px)'
     }}>
       <FaCoins style={{ color: '#ffd700' }} />
-      <span>{coins}</span>
+      <span>{isLoading ? '...' : coins}</span>
     </div>
   );
 };
